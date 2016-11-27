@@ -1,0 +1,22 @@
+version: '2'
+
+volumes:
+
+  logs:
+    driver: local
+
+services:
+
+  server-config:
+    image: enotion-sc/sc-server-config
+    container_name: sc-server-config
+    ports:
+      - 8100:8100
+
+  server-discovery:
+    image: enotion-sc/sc-server-discovery
+    container_name: sc-server-discovery
+    ports:
+      - 8200:8200
+    depends_on:
+      - sc-server-config
