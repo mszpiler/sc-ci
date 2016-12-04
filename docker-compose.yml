@@ -7,16 +7,39 @@ volumes:
 
 services:
 
+  sc-web:
+    image: enotion-sc/sc-web
+    restart: always
+    container_name: sc-web
+    ports:
+      - 8300:8300
+      # dt_socket
+      - 9003:1100
+      # Java RMI
+      - 9103:1099
+    depends_on:
+      - server-config
+
   server-config:
     image: enotion-sc/sc-server-config
+    restart: always
     container_name: sc-server-config
     ports:
       - 8100:8100
+      # dt_socket
+      - 9001:1100
+      # Java RMI
+      - 9101:1099
 
   server-discovery:
     image: enotion-sc/sc-server-discovery
+    restart: always
     container_name: sc-server-discovery
     ports:
       - 8200:8200
+      # dt_socket
+      - 9002:1100
+      # Java RMI
+      - 9102:1099
     depends_on:
-      - sc-server-config
+      - server-config
