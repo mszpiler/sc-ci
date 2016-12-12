@@ -1,24 +1,10 @@
 version: '2'
 
 volumes:
-
   logs:
     driver: local
 
 services:
-
-  sc-web:
-    image: enotion-sc/sc-web
-    restart: always
-    container_name: sc-web
-    ports:
-      - 8300:8300
-      # dt_socket
-      - 9003:1100
-      # Java RMI
-      - 9103:1099
-    depends_on:
-      - server-config
 
   server-config:
     image: enotion-sc/sc-server-config
@@ -30,6 +16,8 @@ services:
       - 9001:1100
       # Java RMI
       - 9101:1099
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
 
   server-discovery:
     image: enotion-sc/sc-server-discovery
@@ -41,5 +29,76 @@ services:
       - 9002:1100
       # Java RMI
       - 9102:1099
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - server-config
+
+  sc-monitoring:
+    image: enotion-sc/sc-monitoring
+    container_name: sc-monitoring
+    ports:
+      # application
+      - 8300:8080
+      # Turbine stream
+      - 8989:8989
+      # dt_socket
+      - 9003:1100
+      # Java RMI
+      - 9103:1099
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    links:
+      - sc-rabbitmq
+      - server-config
+      - server-discovery
+    depends_on:
+      - sc-rabbitmq
+      - server-config
+      - server-discovery
+
+  sc-web:
+    image: enotion-sc/sc-web
+    restart: always
+    container_name: sc-web
+    ports:
+      - 8800:8800
+      # dt_socket
+      - 9004:1100
+      # Java RMI
+      - 9104:1099
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    links:
+      - server-config
+      - server-discovery
+    depends_on:
+      - server-config
+      - server-discovery
+
+  sc-account:
+    image: enotion-sc/sc-account
+    restart: always
+    container_name: sc-account
+    ports:
+      - 8801:8801
+      # dt_socket
+      - 9005:1100
+      # Java RMI
+      - 9105:1099
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    links:
+      - server-config
+      - server-discovery
+    depends_on:
+      - server-config
+      - server-discovery
+
+  sc-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: sc-rabbitmq
+    restart: always
+    ports:
+      # rabbitmq
+      - 15672:15672
